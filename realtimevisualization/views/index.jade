@@ -1,0 +1,8 @@
+extends layout
+
+block content
+  h1 Realtime Visualization
+  //div.d3chart#chart1
+
+  div(ng-controller="infoCtrl")
+    info-box(data="name")

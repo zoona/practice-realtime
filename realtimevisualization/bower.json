@@ -1,0 +1,19 @@
+{
+  "name": "realtimevisualization",
+  "version": "0.0.0",
+  "authors": [
+    "zoona <zoona@zoona.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "latest",
+    "d3": "latest"
+  }
+}
