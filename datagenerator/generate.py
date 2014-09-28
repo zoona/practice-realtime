@@ -19,7 +19,7 @@ customerAgeGrades = [
 	'5060', '6070', '7080', '8090', '9999'];
 
 # order time interval
-timeInterval = 1 * 0.1
+timeInterval = 1 * 0.25
 # for testing, log
 count = 0
 orderCount = 0

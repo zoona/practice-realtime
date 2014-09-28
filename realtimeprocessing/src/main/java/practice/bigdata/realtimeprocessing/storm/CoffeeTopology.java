@@ -20,7 +20,7 @@ public class CoffeeTopology {
     // build topology
     TopologyBuilder builder = new TopologyBuilder();
     builder.setSpout("redisSpout", new RedisSpout(redisHost, redisPort));
-    builder.setBolt("counterBolt", new CounterBolt(redisHost, redisPort), 5)
+    builder.setBolt("counterBolt", new CounterBolt(redisHost, redisPort), 20)
         .fieldsGrouping("redisSpout", "redis_input_stream",
             new Fields("branch"));
     builder.setBolt("saveBolt", new SaveBolt(redisHost, redisPort), 5)

@@ -34,7 +34,7 @@ public class CounterBolt extends BaseRichBolt {
   int redisPort;
   SimpleDateFormat dateFormatter;
   int saveInterval = 30;
-  String lastDateString;
+  String lastDateString = "";
   Map<String, Statistics> statisticsMap = new HashMap<String, Statistics>();
 
   public CounterBolt(String redisHost, int redisPort) {
@@ -74,20 +74,20 @@ public class CounterBolt extends BaseRichBolt {
     // emit to SaveBolt (each 'saveInterval' seconds)
     String dateString = getDateString();
 
+    logger.info(dateString + "/ " + lastDateString + " : " + dateString.equals(lastDateString));
     if (!dateString.equals(lastDateString)) {
-      logger.info("----------------save----------------");
-      collector.emit("counter_stream", new Values(dateString, statistics));
+      logger.info("SAVE : " + branch + "-------------------------");
+      collector.emit("counter_stream", new Values(branch, dateString, statistics));
       statisticsMap.clear();
       lastDateString = dateString;
     }
 
-    publishStatistics(dateString, statistics);
-    logger.info("publish");
+    publishStatistics(branch, dateString, statistics);
   }
 
   @Override
   public void declareOutputFields(OutputFieldsDeclarer declarer) {
-    declarer.declareStream("counter_stream", new Fields("dateString",
+    declarer.declareStream("counter_stream", new Fields("branch", "dateString",
         "statistics"));
   }
 
@@ -109,7 +109,7 @@ public class CounterBolt extends BaseRichBolt {
     return this.dateFormatter.format(date);
   }
 
-  public void publishStatistics(String dateString,
+  public void publishStatistics(String branch, String dateString,
       Statistics statistics) {
     JsonArray customerAgeGradesArray = new JsonArray();
     for (String key : statistics.getCustomerAgeGrades().keySet()) {
@@ -118,25 +118,10 @@ public class CounterBolt extends BaseRichBolt {
       count.addProperty("count", statistics.getCustomerAgeGrades().get(key));
       customerAgeGradesArray.add(count);
     }
-    JsonArray paymentMethodsArray = new JsonArray();
-    for (String key : statistics.getPaymentMethods().keySet()) {
-      JsonObject count = new JsonObject();
-      count.addProperty("type", key);
-      count.addProperty("count", statistics.getPaymentMethods().get(key));
-      paymentMethodsArray.add(count);
-    }
-    JsonArray ordersArray = new JsonArray();
-    for (String key : statistics.getOrders().keySet()) {
-      JsonObject count = new JsonObject();
-      count.addProperty("type", key);
-      count.addProperty("count", statistics.getOrders().get(key));
-      ordersArray.add(count);
-    }
     JsonObject body = new JsonObject();
+    body.addProperty("branch", branch);
     body.addProperty("date", dateString);
-    body.add("customerAgeGrades", customerAgeGradesArray);
-    body.add("paymentMethods", paymentMethodsArray);
-    body.add("orders", ordersArray);
+    body.add("counts", customerAgeGradesArray);
 
     JsonObject packet = new JsonObject();
     packet.addProperty("header", "PUBLISH_STATISTICS");

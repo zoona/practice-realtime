@@ -16,9 +16,12 @@ RedisSubscriber.prototype.subscribe = function() {
     var packet = new Packet().fromJSONString(message);
     var now = new Date().getTime();
     if(that.socket != null) {
-      if(now - that.lastPushTime >= 1000) {
-        packet.emit(that.socket);
-        that.lastPushTime = now;
+      if(now - that.lastPushTime >= 250) {
+        console.log(packet.body.branch);
+        if(packet.body.branch == "jeongja") {
+          packet.emit(that.socket);
+          that.lastPushTime = now;
+        }
       }
     }
   });

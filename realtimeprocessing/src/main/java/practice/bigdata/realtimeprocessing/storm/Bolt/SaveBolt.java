@@ -46,15 +46,12 @@ public class SaveBolt extends BaseRichBolt {
 
   @Override
   public void execute(Tuple input) {
+    String branch = input.getStringByField("branch");
     String dateString = input.getStringByField("dateString");
     Statistics statistics = (Statistics) input.getValueByField("statistics");
  
-    String key = dateString + ":PaymentMethods";
-    increaseCounts(key, statistics.getPaymentMethods());
-    key = dateString + ":CustomerAgeGrades";
+    String key = branch + ":" + dateString + ":CustomerAgeGrades";
     increaseCounts(key, statistics.getCustomerAgeGrades());
-    key = dateString + ":Orders";
-    increaseCounts(key, statistics.getOrders());
   }
 
   @Override

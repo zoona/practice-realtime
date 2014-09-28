@@ -42,10 +42,10 @@ PacketProcessor.prototype.onRequestStatistics = function(data, socket) {
     datetimeNow.setSeconds(0);
 
   var multi = redisClient.multi();
-  for(var i = 0; i < count; i++) {
+  for(var i = count - 1; i >= 0; i--) {
     var dateTimeString = this.getDatetimeString(datetimeNow, 30 * 1000 * i);
-    //var key = data.branch + ":" + dateTimeString + ":" + type;
-    var key = dateTimeString + ":" + type;
+    var key = data.branch + ":" + dateTimeString + ":" + type;
+    //var key = dateTimeString + ":" + type;
     keys.push(key);
     multi = multi.hgetall(key);
   }
@@ -58,10 +58,12 @@ PacketProcessor.prototype.onRequestStatistics = function(data, socket) {
         counts.push({type:p, count:result[i][p]})
       }
       statistics.push({
-        date:keys[i].split(":")[0],
+        branch:keys[i].split(":")[0],
+        date:keys[i].split(":")[1],
         counts:counts
       });
     }
+    console.log(statistics);
 
     var packet = new Packet("RESPONSE_STATISTICS_HISTORY", statistics);
     packet.emit(socket);
