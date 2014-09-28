@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +20,9 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 public class CounterBolt extends BaseRichBolt {
 
@@ -51,13 +55,13 @@ public class CounterBolt extends BaseRichBolt {
   @Override
   public void execute(Tuple input) {
     // get fields from tuple
+    String branch = input.getStringByField("branch");
     String customerAgeGrade = input.getStringByField("customerAgeGrade");
     String paymentMethod = input.getStringByField("paymentMethod");
-    @SuppressWarnings("unchecked")
     List<String> orders = (List<String>) input.getValueByField("orders");
     // get statistics
     // customerAgeGrade is key
-    Statistics statistics = statisticsMap.get(customerAgeGrade);
+    Statistics statistics = statisticsMap.get(branch);
     if (statistics == null) {
       statistics = new Statistics();
     }
@@ -66,14 +70,19 @@ public class CounterBolt extends BaseRichBolt {
     increaseMapValue(statistics.getPaymentMethods(), paymentMethod);
     for (String order : orders)
       increaseMapValue(statistics.getOrders(), order);
-    statisticsMap.put(customerAgeGrade, statistics);
+    statisticsMap.put(branch, statistics);
     // emit to SaveBolt (each 'saveInterval' seconds)
     String dateString = getDateString();
-    if (lastDateString != dateString) {
+
+    if (!dateString.equals(lastDateString)) {
+      logger.info("----------------save----------------");
       collector.emit("counter_stream", new Values(dateString, statistics));
       statisticsMap.clear();
       lastDateString = dateString;
     }
+
+    publishStatistics(dateString, statistics);
+    logger.info("publish");
   }
 
   @Override
@@ -98,5 +107,41 @@ public class CounterBolt extends BaseRichBolt {
     c.set(Calendar.MILLISECOND, 0);
     Date date = c.getTime();
     return this.dateFormatter.format(date);
+  }
+
+  public void publishStatistics(String dateString,
+      Statistics statistics) {
+    JsonArray customerAgeGradesArray = new JsonArray();
+    for (String key : statistics.getCustomerAgeGrades().keySet()) {
+      JsonObject count = new JsonObject();
+      count.addProperty("type", key);
+      count.addProperty("count", statistics.getCustomerAgeGrades().get(key));
+      customerAgeGradesArray.add(count);
+    }
+    JsonArray paymentMethodsArray = new JsonArray();
+    for (String key : statistics.getPaymentMethods().keySet()) {
+      JsonObject count = new JsonObject();
+      count.addProperty("type", key);
+      count.addProperty("count", statistics.getPaymentMethods().get(key));
+      paymentMethodsArray.add(count);
+    }
+    JsonArray ordersArray = new JsonArray();
+    for (String key : statistics.getOrders().keySet()) {
+      JsonObject count = new JsonObject();
+      count.addProperty("type", key);
+      count.addProperty("count", statistics.getOrders().get(key));
+      ordersArray.add(count);
+    }
+    JsonObject body = new JsonObject();
+    body.addProperty("date", dateString);
+    body.add("customerAgeGrades", customerAgeGradesArray);
+    body.add("paymentMethods", paymentMethodsArray);
+    body.add("orders", ordersArray);
+
+    JsonObject packet = new JsonObject();
+    packet.addProperty("header", "PUBLISH_STATISTICS");
+    packet.add("body", body);
+
+    jedis.publish("CHANNEL_REDIS_PUBSUB", packet.toString());
   }
 }

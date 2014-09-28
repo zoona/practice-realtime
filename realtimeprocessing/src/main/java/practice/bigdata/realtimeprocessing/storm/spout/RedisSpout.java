@@ -33,7 +33,7 @@ public class RedisSpout extends BaseRichSpout {
   
   @Override
   public void declareOutputFields(OutputFieldsDeclarer declarer) {
-    declarer.declareStream("redis_input_stream", new Fields("customerAgeGrade",
+    declarer.declareStream("redis_input_stream", new Fields("branch", "customerAgeGrade",
         "paymentMethod", "orders"));
 
   }
@@ -55,7 +55,7 @@ public class RedisSpout extends BaseRichSpout {
     } else {
       CoffeeOrder coffeeOrder = new CoffeeOrder(valueString);
       collector.emit("redis_input_stream",
-          new Values(coffeeOrder.getCustomerAgeGrade(),
+          new Values(coffeeOrder.getBranch(), coffeeOrder.getCustomerAgeGrade(),
               coffeeOrder.getPaymentMethod(), coffeeOrder.getOrders()));
     }
   }

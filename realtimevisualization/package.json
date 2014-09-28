@@ -3,8 +3,6 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "postinstall": "bower install",
-    "prestart": "npm install",
     "start": "node ./bin/www"
   },
   "dependencies": {
@@ -15,6 +13,7 @@
     "body-parser": "~1.0.0",
     "debug": "~0.7.4",
     "jade": "~1.3.0",
-    "redis": "latest"
+    "redis": "latest",
+    "socket.io": "latest"
   }
 }

@@ -1,9 +1,41 @@
 #!/usr/bin/env node
-var debug = require('debug')('realtimevisualization');
-var app = require('../app');
+var debug = require("debug")("realtimevisualization");
+var app = require("../app");
 
-app.set('port', process.env.PORT || 3000);
+// serve http
+app.set("port", process.env.PORT || 3000);
 
-var server = app.listen(app.get('port'), function() {
-  debug('Express server listening on port ' + server.address().port);
+var server = app.listen(app.get("port"), function() {
+  debug("Express server listening on port " + server.address().port);
+});
+
+// socket communication
+var socketio = require('socket.io');
+var io = socketio.listen(server);
+
+// redis subscriber
+var RedisSubscriber = require("../server/redissubscriber");
+// redis config
+var redisPort = process.env.REDIS_PORT || 6379;
+var redisHost = process.env.REDIS_HOST || "localhost";
+var redisSubscribeChannel = "CHANNEL_REDIS_PUBSUB";
+var redissubscriber = new RedisSubscriber(
+  redisPort, redisHost, redisSubscribeChannel);
+redissubscriber.subscribe();
+
+// process packet
+var PacketProcessor = require("../server/packetprocessor");
+var packetprocessor = new PacketProcessor();
+io.on("connection", function(socket) {
+  console.log("client connected. socket.id(" + socket.id + ")");
+  packetprocessor.process(socket);
+  redissubscriber.socket = socket;
+});
+
+io.on("disconnect", function() {
+  console.log("disconnected");
+  if (redissubscriber === null)
+    return;
+  redissubscriber.unsubscribe();
+  redissubscriber.disconnect();
 });

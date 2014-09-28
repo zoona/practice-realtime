@@ -9,6 +9,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 
 public class CoffeeOrder {
+  String branch;
   String customerAgeGrade;
   String paymentMethod;
   List<String> orders;
@@ -16,10 +17,19 @@ public class CoffeeOrder {
   public CoffeeOrder(String jsonString) {
     JsonParser parser = new JsonParser();
     JsonObject json = (JsonObject)parser.parse(jsonString);
+    this.branch = json.get("branch").getAsString();
     this.customerAgeGrade = json.get("customerAgeGrade").getAsString();
     this.paymentMethod = json.get("paymentMethod").getAsString();
     Type collectionType = new TypeToken<List<String>>() {}.getType();
     this.orders = new Gson().fromJson(json.get("orders"), collectionType);
+  }
+
+  public String getBranch() {
+    return branch;
+  }
+
+  public void setBranch(String branch) {
+    this.branch = branch;
   }
 
   public String getCustomerAgeGrade() {

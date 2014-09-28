@@ -5,3 +5,5 @@
 /.classpath
 /.metadata
 /RemoteSystemsTempFiles
+/realtimevisualization/public/components
+/realtimevisualization/node_modules

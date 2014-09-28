@@ -20,10 +20,10 @@ public class CoffeeTopology {
     // build topology
     TopologyBuilder builder = new TopologyBuilder();
     builder.setSpout("redisSpout", new RedisSpout(redisHost, redisPort));
-    builder.setBolt("counterBolt", new CounterBolt(redisHost, redisPort), 1)
+    builder.setBolt("counterBolt", new CounterBolt(redisHost, redisPort), 5)
         .fieldsGrouping("redisSpout", "redis_input_stream",
-            new Fields("customerAgeGrade"));
-    builder.setBolt("saveBolt", new SaveBolt(redisHost, redisPort), 1)
+            new Fields("branch"));
+    builder.setBolt("saveBolt", new SaveBolt(redisHost, redisPort), 5)
         .shuffleGrouping("counterBolt", "counter_stream");
     // config
     Config conf = new Config();

@@ -1,8 +1,13 @@
 extends layout
 
-block content
-  h1 Realtime Visualization
-  //div.d3chart#chart1
+block append script
+  script(src='/components/d3/d3.min.js')
+  script(src='/socket.io/socket.io.js')
+  script(src='/core/packet.js')
+  script(src="javascripts/d3chart.js")
 
-  div(ng-controller="infoCtrl")
-    info-box(data="name")
+block content
+  script(src="javascripts/packetprocessor.js")
+  script(src="javascripts/index.js")
+  h1 Realtime Visualization
+  .d3chart#d3chart

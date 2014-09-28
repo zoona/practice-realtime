@@ -13,7 +13,7 @@
     "tests"
   ],
   "dependencies": {
-    "angular": "latest",
+    "jquery": "latest",
     "d3": "latest"
   }
 }

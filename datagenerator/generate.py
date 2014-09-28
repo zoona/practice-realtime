@@ -2,6 +2,11 @@ import random, time, json
 import redis
 
 # sample dataset
+
+branches = [
+	'jeongja', 'seohyeon', 'sunae', 'migeum'
+];
+
 coffeeTypes = [
 	'Espresso', 'Espresso Macchiato', 'Espresso con Panna',
 	'Caffe Latte', 'Flat White', 'Cafe Breve',
@@ -14,7 +19,7 @@ customerAgeGrades = [
 	'5060', '6070', '7080', '8090', '9999'];
 
 # order time interval
-timeInterval = 1
+timeInterval = 1 * 0.1
 # for testing, log
 count = 0
 orderCount = 0
@@ -26,6 +31,7 @@ logFile = open("/tmp/CoffeeLog.txt", "w", 0)
 
 # generating
 while 1:
+	branch = branches[random.randint(0, 3)];
 	quantity = random.randint(1, 10)
 	paymentMethod = paymentMethods[random.randint(0, 2)]
 	customerAgeGrade = customerAgeGrades[random.randint(0, 9)]
@@ -34,6 +40,7 @@ while 1:
 		orders.append(coffeeTypes[random.randint(0, 8)])
 	#
 	jsonString = json.JSONEncoder().encode({
+		"branch": branch,
 	  "orders": orders,
 	  "paymentMethod": paymentMethod,
 	  "customerAgeGrade": customerAgeGrade
