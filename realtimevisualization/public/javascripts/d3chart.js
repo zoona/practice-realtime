@@ -18,11 +18,10 @@ function D3Chart(divID) {
   this.yAxis;
   this.svg;
   this.root;
-  this.barNumber = 40;
   this.duration = 250;
-  this.colors = ["#866146", "#DEA972", "#d0743c", "#F0B75E", "#F1EDBE", "#866146", "#DEA972", "#d0743c", "#F0B75E", "#F1EDBE"];
+  this.colors = ["#866146", "#DEA972", "#d0743c", "#F0B75E", "#F1EDBE", "#866406", "#DEC472", "#f3743c", "#F4370E"];
   this.colorDomain = ['0010', '1020', '2030', '3040', '4050', '5060', '6070', '7080', '9999'];
-  this.maxBarNumber = 30;
+  this.maxBarNumber = 20;
 
   this.containerWidth = $(this.divID).width();
   this.containerHeight = $(this.divID).height();

@@ -18,8 +18,8 @@
 
 
 ----
-
-이미지
+![redis](http://zoona.com/wordpress/wp-content/uploads/2014/09/Screen-Shot-2014-09-29-at-9.51.05-AM.png)
+![chart](http://zoona.com/wordpress/wp-content/uploads/2014/09/Screen-Shot-2014-09-29-at-9.44.04-AM.png)
 
 ----
 

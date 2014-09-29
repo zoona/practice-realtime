@@ -38,14 +38,14 @@ socket.on('message', function(message) {
         break;
       case "PUBLISH_STATISTICS":
         var statistics = packet.body;
-        console.log(d3chart.dataset[d3chart.dataset.length - 1].date + "/" + statistics.date);
         if (d3chart.dataset[d3chart.dataset.length - 1].date == statistics.date) {
           d3chart.dataset[d3chart.dataset.length - 1] = statistics;
         }
         else {
-          if(d3chart.dataset.length >= d3chart.maxBarNumber)
+          if(d3chart.dataset.length >= d3chart.maxBarNumber) {
             d3chart.dataset.shift();
-          d3chart.dataset.push(statistics);
+            d3chart.dataset.push(statistics);
+          }
         }
         d3chart.updateChart();
         break;
