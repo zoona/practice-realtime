@@ -16,21 +16,115 @@
 
 ### 1-2. 결과물
 
-
-----
+`branch:datestring:statistictype`형태의 key로 구분되는 시간 단위 통계 저장
 ![redis](http://zoona.com/wordpress/wp-content/uploads/2014/09/Screen-Shot-2014-09-29-at-9.51.05-AM.png)
+
+실시간 업데이트 되는 chart
 ![chart](http://zoona.com/wordpress/wp-content/uploads/2014/09/Screen-Shot-2014-09-29-at-9.44.04-AM.png)
-
-----
-
 
 ## 2. 프로젝트 구조
 
-----
+### 2-1. 경로
 
-이미지
+* datagenerator
+  - 샘플 데이터 생성 스크립트
+* realtimeprocessing
+  - flume redis Sink 및 storm topology 구현
+  - java(maven) 프로젝트
+* realtimevisualization
+  - 데이터 시각화 서버 및 클라이언트 구현
 
-----
+
+![tree](http://zoona.com/wordpress/wp-content/uploads/2014/09/Screen-Shot-2014-09-29-at-11.02.00-AM.png)
+
+### 2-2. Dependencies
+**Maven 설치**
+```bash
+wget http://mirror.apache-kr.org/maven/maven-3/3.2.3/binaries/apache-maven-3.2.3-bin.tar.gz
+tar xvfz apache-maven-3.2.3-bin.tar.gz
+```
+
+환경설정
+```bash
+vi ~/.bash_profile
+```
+```bash
+export M2_HOME=$HOME/apache-maven-3.2.3
+PATH=$PATH:$HOME:$M2_HOME/bin
+```
+
+```bash
+. ~/.bash_profile
+```
+
+**node.js, express.js, bower.js 설치**
+```
+curl -sL https://rpm.nodesource.com/setup | bash -
+yum install -y nodejs
+sudo npm install express express-generator -g
+sudo npm install bower
+```
+
+**redis 설치**
+
+```bash
+wget http://download.redis.io/releases/redis-2.8.17.tar.gz
+tar xvfz redis-2.8.17.tar.gz
+cd redis-2.8.17
+make
+```
+
+환경설정
+
+```bash
+vi ~/.bash_profile
+```
+
+```bash
+PATH=$PATH:$HOME/redis-2.8.17/src
+```
+
+```bash
+. ~/.bash_profile
+```
+
+실행
+
+```bash
+redis-server ~/redis-2.8.17/redis.conf
+```
+
+```bash
+redis-client
+```
+
+**flume 설치**
+
+```bash
+wget http://apache.tt.co.kr/flume/1.5.0.1/apache-flume-1.5.0.1-bin.tar.gz
+tar xvfz apache-flume-1.5.0.1-bin.tar.gz
+```
+
+환경설정
+
+```bash
+vi ~/.bash_profile
+```
+
+```bash
+PATH=$PATH:$HOME/apache-flume-1.5.0.1-bin/bin
+```
+
+```bash
+. ~/.bash_profile
+```
+
+**pip, redis python library 설치**
+
+```bash
+easy_install pip
+pip install redis
+```
 
 ### 2-1. 데이터
 
@@ -39,6 +133,73 @@ python 스크립트
 미리 정해놓은 데이터셋으로 부터 무작위로 추출하여 커피 주문 이벤트를 생성
 
 텍스트 파일에 JSON 형태로 쓰여지도록 작성
+
+```python
+import random, time, json
+import redis
+
+# sample dataset
+
+branches = [
+  'jeongja', 'seohyeon', 'sunae', 'migeum'
+];
+
+coffeeTypes = [
+  'Espresso', 'Espresso Macchiato', 'Espresso con Panna',
+  'Caffe Latte', 'Flat White', 'Cafe Breve',
+  'Cappuccino', 'Caffe Mocha', 'Americano']
+
+paymentMethods = ['Cash', 'Credit', 'Debit'];
+
+customerAgeGrades = [
+  '0010', '1020', '2030', '3040', '4050',
+  '5060', '6070', '7080', '8090', '9999'];
+
+# order time interval
+timeInterval = 1 * 0.25
+# for testing, log
+count = 0
+orderCount = 0
+limit = 10
+
+# output path
+outputFile = open("/tmp/CoffeeOrders.txt", "w", 0)
+logFile = open("/tmp/CoffeeLog.txt", "w", 0)
+
+# generating
+while 1:
+  branch = branches[random.randint(0, 3)];
+  quantity = random.randint(1, 10)
+  paymentMethod = paymentMethods[random.randint(0, 2)]
+  customerAgeGrade = customerAgeGrades[random.randint(0, 9)]
+  orders = []
+  for i in range(quantity):
+    orders.append(coffeeTypes[random.randint(0, 8)])
+  #
+  jsonString = json.JSONEncoder().encode({
+    "branch": branch,
+    "orders": orders,
+    "paymentMethod": paymentMethod,
+    "customerAgeGrade": customerAgeGrade
+  })
+  # write out
+  outputFile.write(jsonString + "\n")
+  time.sleep(timeInterval)
+  # print and log
+  print jsonString + "\n";
+  count += 1
+  orderCount += len(orders)
+  logFile.write("row : " + str(count) + ", count : " + str(orderCount) + "\n")
+  #if count > limit:
+  #	break;
+
+outputFile.close()
+logFile.close()
+print "generate Complete"
+```
+
+CoffeeOrders.txt
+![json](http://zoona.com/wordpress/wp-content/uploads/2014/09/Screen-Shot-2014-09-29-at-12.57.38-PM.png)
 
 ### 2-3. 수집
 
@@ -51,7 +212,7 @@ tail -f CoffeeOrders.txt
 
 Redis에 저장할 수 있도록 RedisSink를 구현하여 구동
 
-### 2-2. 처리
+### 2-3. 처리
 
 Storm을 이용해서 Redis list에 수집되는 데이터를 순차적으로 불러와서 통계를 내고,
 
@@ -59,7 +220,7 @@ Storm을 이용해서 Redis list에 수집되는 데이터를 순차적으로 �
 
 처리에 필요한 RedisSpout, CountBolt를 구현하여 구동
 
-### 2-3. 저장
+### 2-4. 저장
 
 Storm에서 처리되는 실시간 통계를 주기적으로 저장
 
@@ -67,7 +228,7 @@ Redis에 hash형태로 저장하는 SaveBolt를 구현하고,
 
 CountBolt에서 주기적으로 SaveBolt에 emit하도록 구현
 
-### 2-4. 서비스 및 시각화
+### 2-5. 서비스 및 시각화
 
 Storm의 CountBolt에서 publish하는 실시간 통계를 subscribe해서
 
@@ -83,6 +244,8 @@ Storm의 CountBolt에서 publish하는 실시간 통계를 subscribe해서
 
 ### 3-1. Flume
 
+![logo](http://flume.apache.org/_static/flume-logo.png)
+
 다양한 소스에서 발생한 대량의 로그 데이터를 중앙 데이터 스토어로 효과적으로 수집 집계(aggregating)하거나 이동시킬 수 있는 신뢰할수있는 분산 시스템
 
 스트림 지향의 데이터 플로우를 기반으로 하며 지정된 모든 서버로 부터 로그를 수집한 후 하둡 HDFS와 같은 중앙 저장소에 적재하여 분석하는 시스템을 구축해야 할 때 적합
@@ -94,7 +257,7 @@ Goals
 * Reliability - 장애가 발생시 로그의 유실없이 전송할 수 있는 기능
 * Scalability - Agent의 추가 및 제거가 용이
 * Manageability - 간결한 구조로 관리가 용이
-* Extensibility - 새로은 기능을 쉽게 추가할 수 있음
+* Extensibility - 새로운 기능을 쉽게 추가할 수 있음
 
 Core Concepts
 
@@ -257,7 +420,7 @@ a1.sinkgroups.g1.processor.maxpenalty = 10000
 ```
 
 ```c
-$ load balancing
+# load balancing
 a1.sinkgroups = g1
 a1.sinkgroups.g1.sinks = k1 k2
 a1.sinkgroups.g1.processor.type = load_balance
@@ -357,29 +520,12 @@ a1.sinks.k1.filePrefix = FlumeData.%{CollectorHost}.%Y-%m-%d
 a1.sinks.k1.channel = c1
 ```
 
-Installation
-
-* Binary 다운로드
-* Source 다운로드, 컴파일
-* package manager
-
-```
-# download binary
-$ wget http://mirror.apache-kr.org/flume/1.5.0/apache-flume-1.5.0-bin.tar.gz
-$ tar xvfz apache-flume-1.5.0-bin.tar.gz
-```
-
-```
-# yum
-$ sudo yum install flume
-```
-
-Practice
+**Practice**
 
 spoolDir source - memoryChannel - file_roll sink
-* spoolDir Source로 /home/hadoop/spool 디렉토리 감시 후 생성 파일 수집
+* spoolDir Source로 /tmp/spool 디렉토리 감시 후 생성 파일 수집
 * memory channel에 저장
-* fileRoll Sink로 /home/hadoop/fileroll에 저장
+* fileRoll Sink로 /tmp/fileroll에 저장
 
 ```bash
 agent.sources = spoolDirSource
@@ -390,20 +536,27 @@ agent.channels.memoryChannel.type = memory
 agent.channels.memoryChannel.capacity = 1000
 
 agent.sources.spoolDirSource.type = spoolDir
-agent.sources.spoolDirSource.spoolDir = /home/hadoop/spool
+agent.sources.spoolDirSource.spoolDir = /tmp/spool
 agent.sources.spoolDirSource.channels = memoryChannel
 
 agent.sinks.fileRollSink.type = file_roll
-agent.sinks.fileRollSink.sink.directory = /home/hadoop/fileroll
+agent.sinks.fileRollSink.sink.directory = /tmp/fileroll
 agent.sinks.fileRollSink.channel = memoryChannel
 ```
 
 ```bash
-$ vi case01.properties
+vi case01.properties
 # 내용 입력
-$ mkdir file_roll
-$ flume-ng agent --conf-file=case01.conf -n agent
-$ ls -al /home/hadoop/fileroll
+
+mkdir /tmp/fileroll
+mkdir /tmp/spool
+
+flume-ng agent --conf-file=case01.conf -n agent
+
+ls -al /tmp/fileroll
+echo hello > /tmp/spool/test.txt
+ls -al /tmp/fileroll
+ls -al /tmp/spool
 ```
 
 exec source - fileChannel - hdfs sink
@@ -424,9 +577,9 @@ agent.sources.execSource.interceptors = timestampInterceptor
 agent.sources.execSource.interceptors.timestampInterceptor.type = timestamp
 
 agent.sinks.hdfsSink.type = hdfs
-agent.sinks.hdfsSink.hdfs.path = hdfs://bigdata20-01/flume/%Y%m%d-%H%M%S
-agent.sinks.hdfsSink.fileType = DataStream
-agent.sinks.hdfsSink.writeFormat = Text
+agent.sinks.hdfsSink.hdfs.path = hdfs://bigdata05-01/flume/%Y%m%d-%H%M%S
+agent.sinks.hdfsSink.hdfs.fileType = DataStream
+agent.sinks.hdfsSink.hdfs.writeFormat = Text
 agent.sinks.hdfsSink.channel = fileChannel
 
 agent.channels.fileChannel.type = file
@@ -435,15 +588,30 @@ agent.channels.fileChannel.dataDirs = /tmp/flume/data
 ```
 
 ```bash
-$ vi case02.properties
+vi case02.properties
 # 내용 입력
-$ flume-ng agent --conf-file=case02.conf -n agent
-$ hadoop fs -ls /tmp
+
+touch /tmp/buffer
+
+su - hdfs
+hadoop fs -mkdir /flume
+hadoop fs -chmod 777 /flume
+exit
+
+flume-ng agent --conf-file=case02.conf -n agent
+
+echo hello >> /tmp/buffer
+
+hadoop fs -ls /flume
+hadoop fs -ls /flume/20140929-131158
+hadoop fs -cat /flume/20140929-131158/FlumeData.1411963919649
 ```
 
 ### 3-2. Storm
 
 ### 3-3. Redis
+
+![logo](http://download.redis.io/logocontest/82.png)
 
 Overview
 
@@ -457,54 +625,26 @@ Usage
 * Session store
 * Realtime Ranking
 
-Advantage
+장점
 
 * Speed
 * Command Level Atomic Operation
 * Lots of Client Lib(java, node.js, objective-c, c#, erlang, ruby ...)
 
-Disadvantages
+단점
 
 * Snapshot IO overhead
 * whole dataset be loaded into main memory
 
-Installation
+* RDB - 메모리의 snapshot을 떠서 그대로 저장
+  * restart 시간이 빠름름
+  * snapshot 추출시간이 오래거림
+* AOF - log file append
+  * log write 속도가 빠름
+  * 디스크 용량
 
-```bash
-$ wget http://download.redis.io/releases/redis-2.8.12.tar.gz
-$ tar xvfz redis-2.8.12.tar.gz
-$ make
-$ make test
-```
 
-Run
-
-server
-
-```bash
-# just run
-$ src/redis-server
-# with conf
-$ src/redis-server redis.conf
-```
-
-client
-
-```bash
-$ src/redis-client
-```
-
-Test
-
-```bash
-redis 127.0.0.1:5379set mykey hello
-OK
-redis 127.0.0.1:5379get mykey
-"sample"
-redis 127.0.0.1:5379
-```
-
-Data Types
+**Data Types**
 
 String
 
@@ -561,45 +701,44 @@ http://redis.io/commands
 
 ### 3-3. Node.js
 
-What is node.js?
+node.js is
 
-Allows you to build scalable network
+* Server-side Javascript
+* Built on Google’s V8
+* Evented, non-blocking I/O.
+* CommonJS module system
+* 8000 lines of C/C++, 2000 lines of Javascript
 
-applications using JavaScript on the server-side
 
 node.js is not
 
-Web Framework
+* Web Framework
+* For Beginners
+* Multi-threaded
 
-For Beginners
+적용 예
 
-Multi-threaded
+* Scalable web servers for web apps
+* Websocket Server
+* RESTful API Server
+* Realtime Data apps
+* Fast File Upload Client
+* Ad Server
+ 
 
-----
+node programming model
 
-What could you build?
+* Event-Driven
+* Non-Blocking I/O Model
+* Single-Thread
+* No DOM implementation provided
 
-Websocket Server
-
-Fast File Upload Client
-
-Ad Server
-
-Any Real-Time Data Apps
-
-----
 
 Blocking vs Non-Blocking
 
-----
-
-Hello World
-
-----
 
 Event Loop
 
-----
 
 NPM
 
@@ -607,18 +746,12 @@ NPM
 
 Express.js
 
-Easy route URLs to callbacks
+* Easy route URLs to callbacks
+* Middleware
+* Environment based configuration
+* Redirection helpers
+* File Uploads
 
-Middleware
-
-Environment based configuration
-
-Redirection helpers
-
-File Uploads
-----
-
-### 3-4. D3.js
 
 ## 4. 실습
 
@@ -730,28 +863,402 @@ while 1:
 
 #### 4-3-1. Redis Sink 작성
 
+```java
+public class RedisSink extends AbstractSink implements Configurable {
+
+  private Logger logger = LoggerFactory.getLogger(this.getClass());
+
+  String redisHost;
+  int redisPort;
+  String redisKey;
+
+  private Jedis jedis;
+
+  @Override
+  public Status process() throws EventDeliveryException {
+    // TODO Auto-generated method stub
+    Status status = null;
+    // Start transaction
+    Channel channel = getChannel();
+    Transaction transaction = channel.getTransaction();
+    transaction.begin();
+    try {
+      Event event = channel.take();
+      Long result = jedis.rpush(redisKey, new String(event.getBody(), "utf-8"));
+      if (result > 0) {
+        logger.info("lpush : " + new String(event.getBody(), "utf-8")
+            + " into " + redisKey + "(" + result + ")");
+        transaction.commit();
+        status = Status.READY;
+      } else {
+        logger.error("RPUSH FAILED");
+        transaction.rollback();
+        status = Status.BACKOFF;
+      }
+    } catch (Throwable t) {
+      transaction.rollback();
+      status = Status.BACKOFF;
+      if (t instanceof Error) {
+        throw (Error) t;
+      }
+    } finally {
+      transaction.close();
+    }
+    return status;
+  }
+
+  @Override
+  public void configure(Context context) {
+    redisHost = context.getString("redisHost");
+    redisPort = context.getInteger("redisPort");
+    redisKey = context.getString("redisKey");
+  }
+
+  @Override
+  public synchronized void start() {
+    // TODO Auto-generated method stub
+    super.start();
+    jedis = new Jedis(redisHost, redisPort);
+  }
+
+  @Override
+  public synchronized void stop() {
+    // TODO Auto-generated method stub
+    super.stop();
+    jedis.disconnect();
+  }
+
+}
+
+```
+
 #### 4-3-2. Properties 작성 및 실행
+
+toRedisQueue.properties
+
+```bash
+agent.sources = exec
+agent.channels = mem
+agent.sinks = redis
+
+# channel
+agent.channels.mem.type = memory
+agent.channels.mem.capacity = 1000
+agent.channels.mem.transactionCapacity = 100
+
+# source
+agent.sources.exec.type = exec
+agent.sources.exec.command = tail -100f /tmp/CoffeeOrders.txt
+agent.sources.exec.batchSize = 1000
+agent.sources.exec.channels = mem
+
+# sink
+agent.sinks.redis.channel = mem
+agent.sinks.redis.type = practice.bigdata.realtimeprocessing.flume.sink.RedisSink
+agent.sinks.redis.redisHost = localhost
+agent.sinks.redis.redisPort = 6379
+agent.sinks.redis.redisKey = CoffeeOrderQueue
+
+```
+
+flume-ng 실행
+
+```bash
+flume-ng agent --conf-file realtiprocessing/conf/toRedisQueue.properties --conf realtimeprocessing/conf --classpath realtimeprocessing/target/realtimeprocessing-0.0.1-SNAPSHOT-jar-with-dependencies.jar --name agent
+```
 
 ### 4-4. 처리
 
 #### 4-4-1. Redis Spout 작성
 
-#### 4-4-2. Count Bolt 작성
+```java
+public class RedisSpout extends BaseRichSpout {
 
+  private static final long serialVersionUID = 1L;
+  Logger logger = LoggerFactory.getLogger(this.getClass());
+  private SpoutOutputCollector collector;
+  // redis info
+  private String redisHost;
+  private int redisPort;
+  private String redisKey = "CoffeeOrderQueue";
+  private Jedis jedis;
+
+  public RedisSpout(String redisHost, int redisPort) {
+    this.redisHost = redisHost;
+    this.redisPort = redisPort;
+  }
+
+  @Override
+  public void declareOutputFields(OutputFieldsDeclarer declarer) {
+    declarer.declareStream("redis_input_stream", new Fields("branch", "customerAgeGrade",
+        "paymentMethod", "orders"));
+
+  }
+
+  @Override
+  public void open(Map conf, TopologyContext context,
+      SpoutOutputCollector collector) {
+    this.collector = collector;
+    jedis = new Jedis(redisHost, redisPort);
+    jedis.connect();
+
+  }
+
+  @Override
+  public void nextTuple() {
+    String valueString = jedis.lpop(redisKey);
+    if (valueString == null) {
+      Utils.sleep(5);
+    } else {
+      CoffeeOrder coffeeOrder = new CoffeeOrder(valueString);
+      collector.emit("redis_input_stream",
+          new Values(coffeeOrder.getBranch(), coffeeOrder.getCustomerAgeGrade(),
+              coffeeOrder.getPaymentMethod(), coffeeOrder.getOrders()));
+    }
+  }
+}
+
+```
+
+#### 4-4-2. CounterBolt 작성
+
+```java
+public class CounterBolt extends BaseRichBolt {
+
+  private static final long serialVersionUID = 1L;
+  Logger logger = LoggerFactory.getLogger(this.getClass());
+  OutputCollector collector;
+  Jedis jedis;
+  String redisHost;
+  int redisPort;
+  SimpleDateFormat dateFormatter;
+  int saveInterval = 30;
+  String lastDateString = "";
+  Map<String, Statistics> statisticsMap = new HashMap<String, Statistics>();
+
+  public CounterBolt(String redisHost, int redisPort) {
+    this.redisHost = redisHost;
+    this.redisPort = redisPort;
+  }
+
+  @Override
+  public void prepare(Map stormConf, TopologyContext context,
+      OutputCollector collector) {
+    this.collector = collector;
+    jedis = new Jedis(redisHost, redisPort);
+    jedis.connect();
+
+    this.dateFormatter = new SimpleDateFormat("yyyyMMddHHmmss");
+  }
+
+  @Override
+  public void execute(Tuple input) {
+    // get fields from tuple
+    String branch = input.getStringByField("branch");
+    String customerAgeGrade = input.getStringByField("customerAgeGrade");
+    String paymentMethod = input.getStringByField("paymentMethod");
+    List<String> orders = (List<String>) input.getValueByField("orders");
+    // get statistics
+    // customerAgeGrade is key
+    Statistics statistics = statisticsMap.get(branch);
+    if (statistics == null) {
+      statistics = new Statistics();
+    }
+    // increase counts
+    increaseMapValue(statistics.getCustomerAgeGrades(), customerAgeGrade);
+    increaseMapValue(statistics.getPaymentMethods(), paymentMethod);
+    for (String order : orders)
+      increaseMapValue(statistics.getOrders(), order);
+    statisticsMap.put(branch, statistics);
+    // emit to SaveBolt (each 'saveInterval' seconds)
+    String dateString = getDateString();
+
+    logger.info(dateString + "/ " + lastDateString + " : " + dateString.equals(lastDateString));
+    if (!dateString.equals(lastDateString)) {
+      collector.emit("counter_stream", new Values(branch, dateString, statistics));
+      statisticsMap.clear();
+      lastDateString = dateString;
+    }
+
+    publishStatistics(branch, dateString, statistics);
+  }
+
+  @Override
+  public void declareOutputFields(OutputFieldsDeclarer declarer) {
+    declarer.declareStream("counter_stream", new Fields("branch", "dateString",
+        "statistics"));
+  }
+
+  public void increaseMapValue(Map<String, Long> map, String key) {
+    Long count = map.get(key);
+    if (count != null)
+      map.put(key, count + 1);
+    else
+      map.put(key, 1L);
+  }
+
+  public String getDateString() {
+    Calendar c = Calendar.getInstance();
+    c.setTime(new Date());
+    int second = (c.get(Calendar.SECOND) / saveInterval) * saveInterval;
+    c.set(Calendar.SECOND, second);
+    c.set(Calendar.MILLISECOND, 0);
+    Date date = c.getTime();
+    return this.dateFormatter.format(date);
+  }
+
+  public void publishStatistics(String branch, String dateString,
+      Statistics statistics) {
+    JsonArray customerAgeGradesArray = new JsonArray();
+    for (String key : statistics.getCustomerAgeGrades().keySet()) {
+      JsonObject count = new JsonObject();
+      count.addProperty("type", key);
+      count.addProperty("count", statistics.getCustomerAgeGrades().get(key));
+      customerAgeGradesArray.add(count);
+    }
+    JsonObject body = new JsonObject();
+    body.addProperty("branch", branch);
+    body.addProperty("date", dateString);
+    body.add("counts", customerAgeGradesArray);
+
+    JsonObject packet = new JsonObject();
+    packet.addProperty("header", "PUBLISH_STATISTICS");
+    packet.add("body", body);
+
+    jedis.publish("CHANNEL_REDIS_PUBSUB", packet.toString());
+  }
+}
+
+```
 #### 4-4-3. Save Bolt 작성
 
+```java
+public class SaveBolt extends BaseRichBolt {
+
+  private static final long serialVersionUID = 1L;
+  Logger logger = LoggerFactory.getLogger(this.getClass());
+  OutputCollector collector;
+  Jedis jedis;
+
+  String redisHost;
+  int redisPort;
+
+  public SaveBolt(String redisHost, int redisPort) {
+    this.redisHost = redisHost;
+    this.redisPort = redisPort;
+  }
+
+  @Override
+  public void cleanup() {
+    super.cleanup();
+    jedis.disconnect();
+  }
+
+  @Override
+  public void prepare(Map stormConf, TopologyContext context,
+      OutputCollector collector) {
+    this.collector = collector;
+    jedis = new Jedis(redisHost, redisPort);
+    jedis.connect();
+  }
+
+  @Override
+  public void execute(Tuple input) {
+    String branch = input.getStringByField("branch");
+    String dateString = input.getStringByField("dateString");
+    Statistics statistics = (Statistics) input.getValueByField("statistics");
+
+    String key = branch + ":" + dateString + ":CustomerAgeGrades";
+    increaseCounts(key, statistics.getCustomerAgeGrades());
+  }
+
+  @Override
+  public void declareOutputFields(OutputFieldsDeclarer declarer) {
+    // TODO Auto-generated method stub
+
+  }
+
+  private void increaseCounts(String hashKey, Map<String, Long> map) {
+    Set<String> keys = map.keySet();
+    for(String key : keys) {
+      jedis.hincrBy(hashKey, key, map.get(key));
+    }
+  }
+}
+
+```
 #### 4-4-4. Topology 작성 및 실행
 
-### 4-5. 서비스
+```java
+public class CoffeeTopology {
+  private static String redisHost = "localhost";
+  private static int redisPort = 6379;
+  private static String topologyID = "CoffeeTopology";
 
-#### 4-5-1. Express.js 프로젝트 구성
+  public static void main(String[] args) {
+    // build topology
+    TopologyBuilder builder = new TopologyBuilder();
+    builder.setSpout("redisSpout", new RedisSpout(redisHost, redisPort));
+    builder.setBolt("counterBolt", new CounterBolt(redisHost, redisPort), 20)
+        .fieldsGrouping("redisSpout", "redis_input_stream",
+            new Fields("branch"));
+    builder.setBolt("saveBolt", new SaveBolt(redisHost, redisPort), 5)
+        .shuffleGrouping("counterBolt", "counter_stream");
+    // config
+    Config conf = new Config();
+    conf.setDebug(true);
+    if (args.length > 1) {
+      topologyID = args[1];
+    }
+    // submit
+    SubmitToLocal(conf, builder);
+    // SubmitToCluster(conf, builder);
+  }
 
-#### 4-5-2. Redis Subscriber 구현
+  public static void SubmitToLocal(Config conf, TopologyBuilder builder) {
+    LocalCluster cluster = new LocalCluster();
+    cluster.submitTopology(topologyID, conf, builder.createTopology());
+  }
 
-#### 4-5-3. Packet Processor 구현
+  public static void SubmitToCluster(Config conf, TopologyBuilder builder) {
+    try {
+      StormSubmitter.submitTopology(topologyID, conf, builder.createTopology());
+    } catch (AlreadyAliveException e) {
+      e.printStackTrace();
+    } catch (InvalidTopologyException e) {
+      e.printStackTrace();
+    }
+  }
+}
+```
 
-#### 4-5-4. 서비스 구동
+5. 실행 scripts
 
-### 4-6. 시각화
+clone source
+```bash
+git clone https://github.com/zoona/practice-realtimeprocessing.git
+cd practice-realtimeprocessing
+```
 
-#### 4-6-1. Chart 구현
+data generator
+```bash
+python datagenerator/generate.py
+```
+
+flume
+```bash
+flume-ng agent --conf-file realtimeprocessing/conf/toRedisQueue.properties --conf realtimeprocessing/conf --classpath realtimeprocessing/target/realtimeprocessing-0.0.1-SNAPSHOT-jar-with-dependencies.jar --name agent
+```
+
+storm
+```bash
+storm jar realtimeprocessing/target/realtimeprocessing-0.0.1-SNAPSHOT-jar-with-dependencies.jar practice.bigdata.realtimeprocessing.storm.CoffeeTopology
+```
+
+service
+```bash
+cd realtimevisualization
+npm install
+bower install
+npm start
+```
