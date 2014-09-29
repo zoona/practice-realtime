@@ -37,96 +37,7 @@
 
 ![tree](http://zoona.com/wordpress/wp-content/uploads/2014/09/Screen-Shot-2014-09-29-at-11.02.00-AM.png)
 
-### 2-2. Dependencies
-**Maven 설치**
-```bash
-wget http://mirror.apache-kr.org/maven/maven-3/3.2.3/binaries/apache-maven-3.2.3-bin.tar.gz
-tar xvfz apache-maven-3.2.3-bin.tar.gz
-```
-
-환경설정
-```bash
-vi ~/.bash_profile
-```
-```bash
-export M2_HOME=$HOME/apache-maven-3.2.3
-PATH=$PATH:$HOME:$M2_HOME/bin
-```
-
-```bash
-. ~/.bash_profile
-```
-
-**node.js, express.js, bower.js 설치**
-```
-curl -sL https://rpm.nodesource.com/setup | bash -
-yum install -y nodejs
-sudo npm install express express-generator -g
-sudo npm install bower
-```
-
-**redis 설치**
-
-```bash
-wget http://download.redis.io/releases/redis-2.8.17.tar.gz
-tar xvfz redis-2.8.17.tar.gz
-cd redis-2.8.17
-make
-```
-
-환경설정
-
-```bash
-vi ~/.bash_profile
-```
-
-```bash
-PATH=$PATH:$HOME/redis-2.8.17/src
-```
-
-```bash
-. ~/.bash_profile
-```
-
-실행
-
-```bash
-redis-server ~/redis-2.8.17/redis.conf
-```
-
-```bash
-redis-client
-```
-
-**flume 설치**
-
-```bash
-wget http://apache.tt.co.kr/flume/1.5.0.1/apache-flume-1.5.0.1-bin.tar.gz
-tar xvfz apache-flume-1.5.0.1-bin.tar.gz
-```
-
-환경설정
-
-```bash
-vi ~/.bash_profile
-```
-
-```bash
-PATH=$PATH:$HOME/apache-flume-1.5.0.1-bin/bin
-```
-
-```bash
-. ~/.bash_profile
-```
-
-**pip, redis python library 설치**
-
-```bash
-easy_install pip
-pip install redis
-```
-
-### 2-1. 데이터
+### 2-2. 데이터
 
 python 스크립트
 
@@ -1231,8 +1142,98 @@ public class CoffeeTopology {
   }
 }
 ```
+## 5. 설치 및 실행
 
-5. 실행 scripts
+### 5-1. Dependencies
+**Maven 설치**
+```bash
+wget http://mirror.apache-kr.org/maven/maven-3/3.2.3/binaries/apache-maven-3.2.3-bin.tar.gz
+tar xvfz apache-maven-3.2.3-bin.tar.gz
+```
+
+환경설정
+```bash
+vi ~/.bash_profile
+```
+```bash
+export M2_HOME=$HOME/apache-maven-3.2.3
+PATH=$PATH:$HOME:$M2_HOME/bin
+```
+
+```bash
+. ~/.bash_profile
+```
+
+**node.js, express.js, bower.js 설치**
+```
+curl -sL https://rpm.nodesource.com/setup | bash -
+yum install -y nodejs
+sudo npm install express express-generator -g
+sudo npm install bower
+```
+
+**redis 설치**
+
+```bash
+wget http://download.redis.io/releases/redis-2.8.17.tar.gz
+tar xvfz redis-2.8.17.tar.gz
+cd redis-2.8.17
+make
+```
+
+환경설정
+
+```bash
+vi ~/.bash_profile
+```
+
+```bash
+PATH=$PATH:$HOME/redis-2.8.17/src
+```
+
+```bash
+. ~/.bash_profile
+```
+
+실행
+
+```bash
+redis-server ~/redis-2.8.17/redis.conf
+```
+
+```bash
+redis-client
+```
+
+**flume 설치**
+
+```bash
+wget http://apache.tt.co.kr/flume/1.5.0.1/apache-flume-1.5.0.1-bin.tar.gz
+tar xvfz apache-flume-1.5.0.1-bin.tar.gz
+```
+
+환경설정
+
+```bash
+vi ~/.bash_profile
+```
+
+```bash
+PATH=$PATH:$HOME/apache-flume-1.5.0.1-bin/bin
+```
+
+```bash
+. ~/.bash_profile
+```
+
+**pip, redis python library 설치**
+
+```bash
+easy_install pip
+pip install redis
+```
+
+### 5-2. 실행 scripts
 
 clone source
 ```bash
