@@ -456,7 +456,7 @@ agent.sinks.fileRollSink.channel = memoryChannel
 ```
 
 ```bash
-vi case01.properties
+vi case01.conf
 # 내용 입력
 
 mkdir /tmp/fileroll
@@ -499,7 +499,7 @@ agent.channels.fileChannel.dataDirs = /tmp/flume/data
 ```
 
 ```bash
-vi case02.properties
+vi case02.conf
 # 내용 입력
 
 touch /tmp/buffer
@@ -612,22 +612,23 @@ http://redis.io/commands
 
 ### 3-3. Node.js
 
-node.js is
+![nodejs](http://nodeblog.files.wordpress.com/2011/07/nodejs.png)
+
+#### node.js is
 
 * Server-side Javascript
 * Built on Google’s V8
-* Evented, non-blocking I/O.
+* Event Based, non-blocking I/O.
 * CommonJS module system
 * 8000 lines of C/C++, 2000 lines of Javascript
 
-
-node.js is not
+#### node.js is not
 
 * Web Framework
 * For Beginners
 * Multi-threaded
 
-적용 예
+#### 적용 예
 
 * Scalable web servers for web apps
 * Websocket Server
@@ -637,7 +638,7 @@ node.js is not
 * Ad Server
  
 
-node programming model
+#### node programming model
 
 * Event-Driven
 * Non-Blocking I/O Model
@@ -645,23 +646,372 @@ node programming model
 * No DOM implementation provided
 
 
-Blocking vs Non-Blocking
+#### Blocking vs Non-Blocking
 
+- Blocking
+
+```javascript
+var contents = fs.readFileSync('somefile.txt');
+console.log(content);
+console.log('do next');
+```
+
+- Non-Blocking
+
+```js
+fs.readFile('somefile.txt', function(err, contents) {
+  console.log(contents);
+});
+console.log('do next');
+```
+
+#### Blocking vs Non-Blocking
+
+
+![blocking](http://zoona.com/wordpress/wp-content/uploads/2014/09/Screen-Shot-2014-09-30-at-10.24.58-AM.png)
+
+hello php
+
+```php
+<?php
+  echo "hello";
+  sleep(2);
+  echo "php";
+?>
+```
+
+hello node.js
+
+```js
+setTimeout(function() {
+  console.log("node.js");
+}, 2000);
+console.log("hello");
+```
+
+
+#### Event Based
+
+* Connection들은 Single Thread에 맵핑 됨
+* Event Loop를 사용
+* Event Loop는 순서대로 실행되는 Event Handler Queue를 갖고있다.
+* Event Handler간 스위칭 코스트가 적다
+
+
+* thread방식
+  * context switching
+  * 높은 memory 요구량
+  * 개발 난이도 높음
+
+* javascript
+  * Anonymous functions, closures
+  * Only one callback at a time
+  * I/O through DOM event callbacks
+
+Node Architecture
+
+![node-archi](http://zoona.com/wordpress/wp-content/uploads/2014/09/Screen-Shot-2014-09-30-at-4.06.35-PM.png)
 
 Event Loop
 
+![eventloop](http://zoona.com/wordpress/wp-content/uploads/2014/09/Screen-Shot-2014-09-30-at-10.27.33-AM.png)
 
-NPM
+#### Apache vs. NGINX - Memory Usage
 
-----
+![nginx](http://behrang.github.io/presentations/node.js/2011-09-07/pictures/nginx-apache-memory.png)
 
-Express.js
+#### Apache vs. NGINX - Requests per Second
 
-* Easy route URLs to callbacks
-* Middleware
-* Environment based configuration
-* Redirection helpers
-* File Uploads
+![nginx2](http://behrang.github.io/presentations/node.js/2011-09-07/pictures/nginx-apache-reqs-sec.png)
+
+sample hello world
+
+```bash
+vi hello.js
+```
+
+```js
+var http = require('http');
+http.createServer(function(req, res) {
+  res.writeHead(200, {'Content-Type': 'text/plain'});
+  res.end('Hello World\n');
+}).listen(3001, '127.0.0.1');
+console.log('server running');
+```
+
+```bash
+node hello.js
+```
+
+```bash
+curl localhost:3001
+```
+
+#### NPM
+
+* Node.js Package Manager로 Node.js 설치시 같이 설치 됨
+* Module Repository
+* Dependency Management
+* Easily publish modules
+
+Module을 로컬의 node_modules에 설치
+
+```bash
+npm install mongodb
+```
+
+Node_modules 로 부터 module 로드
+
+```js
+var request = require('monggodb')
+```
+
+#### Express.js
+
+* MVC Framework for web Application
+* Template엔진을 이용해서 HTML 랜더링
+* RESTful routing
+* node.js 기본모듈로는 웹페이지를 만들기 불편함
+
+
+```bash
+express bigdata
+cd bigdata
+npm install
+npm start
+```
+
+샘플 프로젝트 디렉토리 구조
+
+![express-path](http://zoona.com/wordpress/wp-content/uploads/2014/09/Screen-Shot-2014-09-30-at-10.41.27-AM.png)
+
+
+**node.js, express.js, bower.js 설치**
+```
+curl -sL https://rpm.nodesource.com/setup | bash -
+yum install -y nodejs
+sudo npm install express express-generator -g
+sudo npm install bower
+```
+
+#### realtimevisualization 실행
+
+```bash
+cd realtimevisualization
+npm install
+bower install
+npm start
+```
+
+### 3.4 D3.js
+
+#### Data-Driven Documents
+
+* 데이터를 기반으로 document를 생성하는 Javascript 라이브러리
+* HTML, SVG, CSS
+* 웹표준
+
+장점
+* Web Interactivity / animation
+* Advanced data analytics
+
+단점
+* low level library
+* high learning curve
+
+#### DOM manipulation
+
+```js
+var paragraphs = document.getElementByTagName('p');
+for(var i = 0; i < paragraphs.length; i++) {
+  var paragraph = paragraphs.item(i);
+  paragraph.style.setProperty('color', 'white', null);
+}
+```
+
+Selection of DOM element(id, class, HTML tag)
+```js
+d3.selectAll('p').style('color', 'white');
+```
+
+Style the CSS
+```js
+d3.select('body').style('background-color', 'black');
+```
+
+#### Property as functions
+
+styles, attributes와 같은 여러가지 properties를 함수로써 설정
+
+```js
+d3.selectAll('p').style('color', 'red');
+```
+
+```js
+d3.selectAll('p').style('color', function(d, i) {
+  return i % 2 ? '#fff' : '#eee';
+})
+```
+
+```js
+d3.selectAll('p')
+  .data([1, 2, 3, 4, 5])
+  .style('font-size', function(d) {
+    return d + 'px';
+  });
+```
+
+#### Enter, Update and Exit
+
+
+##### Enter
+
+New data, for which there were no existing elements.
+
+```js
+var circle = svg.selectAll('circle')
+  .data(data)
+  .enter()
+  .append('circle')
+  .attr('cx', x)
+  .attr('cy', y)
+  .attr('r', 2.5)
+
+d3.select('svg').attr('id', 'myid')
+  .selectAll('circle')
+  .data(dataset)
+  .enter()
+  .append('circle')
+```
+
+![enter](http://zoona.com/wordpress/wp-content/uploads/2014/09/Screen-Shot-2014-09-30-at-1.27.44-PM.png)
+
+##### Update
+
+New data that was joined successfully to an existing element
+
+```js
+var circle = svg.selectAll('circle')
+  .data(data)
+  .attr('cx', x)
+  .attr('cy', y)
+  .attr('r', 2.5)
+```
+
+![update](http://zoona.com/wordpress/wp-content/uploads/2014/09/Screen-Shot-2014-09-30-at-1.28.03-PM.png)
+
+#### Exit
+
+Existing elements, for which there were no new data.
+
+```js
+var circle = svg.selectAll('circle')
+  .data(data);
+
+circle.exit().remove();
+```
+
+![exit](http://zoona.com/wordpress/wp-content/uploads/2014/09/Screen-Shot-2014-09-30-at-1.28.22-PM.png)
+
+#### Transition
+
+```js
+d3.selectAll(“circle”)
+  .on("mouseover", function() {
+    d3.select(this).style("fill", "aliceblue");})
+  .on("mouseout", function() {
+    d3.select(this).style("fill", "white");})
+
+  .on("mousedown", animate);
+
+  function animate() {
+    d3.select(this)
+      .transition().duration(1000).attr("r",10)
+      .transition().delay(1000).attr("r", 40);
+  };
+```
+
+#### Scale
+
+data-space에서 visual-space로 Mapping 해주는 함수
+
+```js
+function x(d) {
+  return d * 42 + "px";
+}
+```
+
+* linear
+* sqrt
+* pow
+* log
+* quantize
+* threshold
+* quantile
+* identity
+
+```js
+var x = d3.scale.linear()
+  .domain([12, 24])
+  .range([[0, 720]);
+
+console.log(x(16)); // 240
+```
+
+```js
+var x = d3.scale.sqrt()
+  .domain([12, 24])
+  .range([[0, 720]);
+
+console.log(x(16)); // 268.9056992603583
+```
+
+Ordinal
+
+```js
+var x = d3.scale.ordinal()
+  .domain(["a", "b", "c", "d"])
+  .range([0, 10, 20, 30]);
+```
+
+```js
+var x = d3.scale.ordinal()
+  .domain(["a", "b", "c", "d"])
+  .rangeRoundBands([0, 720], .2);
+
+x("b");
+x.rangeBand();
+
+```
+#### Axis
+
+Scale에 따른 Labeling
+
+Create
+
+```js
+var yAxis = d3.svg.axis()
+  .scale(y)
+  .orient('left');
+```
+
+Render
+
+```js
+svg.append("g")
+  .attr("class", "y axis")
+  .call(yAxis);
+```
+
+Style
+
+```css
+.axis path, .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+```
 
 
 ## 4. 실습
@@ -845,7 +1195,7 @@ public class RedisSink extends AbstractSink implements Configurable {
 
 #### 4-3-2. Properties 작성 및 실행
 
-toRedisQueue.properties
+toRedisQueue.conf
 
 ```bash
 agent.sources = exec
@@ -875,10 +1225,120 @@ agent.sinks.redis.redisKey = CoffeeOrderQueue
 flume-ng 실행
 
 ```bash
-flume-ng agent --conf-file realtiprocessing/conf/toRedisQueue.properties --conf realtimeprocessing/conf --classpath realtimeprocessing/target/realtimeprocessing-0.0.1-SNAPSHOT-jar-with-dependencies.jar --name agent
+flume-ng agent --conf-file realtiprocessing/conf/toRedisQueue.conf --conf realtimeprocessing/conf --classpath realtimeprocessing/target/realtimeprocessing-0.0.1-SNAPSHOT-jar-with-dependencies.jar --name agent
 ```
 
 ### 4-4. 처리
+
+#### CoffeeOrder
+
+```java
+package practice.bigdata.realtimeprocessing.model;
+
+import java.lang.reflect.Type;
+import java.util.List;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
+
+public class CoffeeOrder {
+  String branch;
+  String customerAgeGrade;
+  String paymentMethod;
+  List<String> orders;
+
+  public CoffeeOrder(String jsonString) {
+    JsonParser parser = new JsonParser();
+    JsonObject json = (JsonObject)parser.parse(jsonString);
+    this.branch = json.get("branch").getAsString();
+    this.customerAgeGrade = json.get("customerAgeGrade").getAsString();
+    this.paymentMethod = json.get("paymentMethod").getAsString();
+    Type collectionType = new TypeToken<List<String>>() {}.getType();
+    this.orders = new Gson().fromJson(json.get("orders"), collectionType);
+  }
+
+  public String getBranch() {
+    return branch;
+  }
+
+  public void setBranch(String branch) {
+    this.branch = branch;
+  }
+
+  public String getCustomerAgeGrade() {
+    return customerAgeGrade;
+  }
+
+  public void setCustomerAgeGrade(String customerAgeGrade) {
+    this.customerAgeGrade = customerAgeGrade;
+  }
+
+  public String getPaymentMethod() {
+    return paymentMethod;
+  }
+
+  public void setPaymentMethod(String paymentMethod) {
+    this.paymentMethod = paymentMethod;
+  }
+
+  public List<String> getOrders() {
+    return orders;
+  }
+
+  public void setOrders(List<String> orders) {
+    this.orders = orders;
+  }
+}
+
+```
+
+#### Statistics
+
+```java
+package practice.bigdata.realtimeprocessing.model;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class Statistics {
+  Map<String, Long> customerAgeGrades;
+  Map<String, Long> paymentMethods;
+  Map<String, Long> orders;
+
+  public Statistics() {
+    customerAgeGrades = new HashMap<String, Long>();
+    paymentMethods = new HashMap<String, Long>();
+    orders = new HashMap<String, Long>();
+  }
+
+  public Map<String, Long> getCustomerAgeGrades() {
+    return customerAgeGrades;
+  }
+
+  public void setCustomerAgeGrades(Map<String, Long> customerAgeGrades) {
+    this.customerAgeGrades = customerAgeGrades;
+  }
+
+  public Map<String, Long> getPaymentMethods() {
+    return paymentMethods;
+  }
+
+  public void setPaymentMethods(Map<String, Long> paymentMethods) {
+    this.paymentMethods = paymentMethods;
+  }
+
+  public Map<String, Long> getOrders() {
+    return orders;
+  }
+
+  public void setOrders(Map<String, Long> orders) {
+    this.orders = orders;
+  }
+}
+
+```
 
 #### 4-4-1. Redis Spout 작성
 
@@ -1248,7 +1708,7 @@ python datagenerator/generate.py
 
 flume
 ```bash
-flume-ng agent --conf-file realtimeprocessing/conf/toRedisQueue.properties --conf realtimeprocessing/conf --classpath realtimeprocessing/target/realtimeprocessing-0.0.1-SNAPSHOT-jar-with-dependencies.jar --name agent
+flume-ng agent --conf-file realtimeprocessing/conf/toRedisQueue.conf --conf realtimeprocessing/conf --classpath realtimeprocessing/target/realtimeprocessing-0.0.1-SNAPSHOT-jar-with-dependencies.jar --name agent
 ```
 
 storm

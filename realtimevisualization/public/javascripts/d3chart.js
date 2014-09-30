@@ -19,31 +19,40 @@ function D3Chart(divID) {
   this.svg;
   this.root;
   this.duration = 250;
-  this.colors = ["#866146", "#DEA972", "#d0743c", "#F0B75E", "#F1EDBE", "#866406", "#DEC472", "#f3743c", "#F4370E"];
-  this.colorDomain = ['0010', '1020', '2030', '3040', '4050', '5060', '6070', '7080', '9999'];
+
+  this.colors = [
+    "#866146", "#DEA972", "#d0743c", "#F0B75E", "#F1EDBE",
+    "#866406", "#DEC472", "#f3743c", "#F4370E"];
+  this.colorDomain = [
+    '0010', '1020', '2030', '3040', '4050',
+    '5060', '6070', '7080', '9999'];
+
   this.maxBarNumber = 20;
 
+  // init
   this.containerWidth = $(this.divID).width();
   this.containerHeight = $(this.divID).height();
   this.width = this.containerWidth - this.margin.left - this.margin.right;
   this.height = this.containerHeight - this.margin.top - this.margin.bottom;
 
   this.svg = d3.select(this.divID).append("svg")
-  .attr("width", this.width + this.margin.left + this.margin.right)
-  .attr("height", this.height + this.margin.top + this.margin.bottom);
-  console.log(this.svg);
+    .attr("width", this.width + this.margin.left + this.margin.right)
+    .attr("height", this.height + this.margin.top + this.margin.bottom);
 
   this.root = this.svg.append("g")
-  .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
+    .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
 
+  // bar colors
   this.color = d3.scale.ordinal().range(this.colors);
   this.color.domain(this.colorDomain);
 
+  // scale
   this.x = d3.scale.ordinal()
-  .rangeRoundBands([ 0, this.width ], .1);
+    .rangeRoundBands([ 0, this.width ], .1);
   this.y = d3.scale.linear()
-  .range([ this.height, 0 ]);
+    .range([ this.height, 0 ]);
 
+  // axis
   this.xAxis = d3.svg.axis()
     .scale(this.x)
     .orient("bottom")
@@ -68,24 +77,26 @@ function D3Chart(divID) {
 
   // legend
   var legend = this.root.selectAll(".legend")
-  .data(this.color.domain().slice().reverse())
-  .enter()
+    .data(this.color.domain().slice().reverse())
+    .enter()
     .append("g").attr("class", "legend")
     .attr("transform", function(d, i) { return "translate(40," + i * 20 + ")";});
 
   legend.append("rect")
-  .attr("x", this.width - 10)
-  .attr("width", 18)
-  .attr("height", 18)
-  .style("fill", this.color);
+    .attr("x", this.width - 10)
+    .attr("width", 18)
+    .attr("height", 18)
+    .style("fill", this.color);
+
   legend.append("text")
-  .attr("x", this.width - 14)
-  .attr("y", 9)
-  .attr("dy", ".35em")
-  .style("text-anchor", "end")
-  .style("font-size", 10)
-  .text(function(d) { return d; });
+    .attr("x", this.width - 14)
+    .attr("y", 9)
+    .attr("dy", ".35em")
+    .style("text-anchor", "end")
+    .style("font-size", 10)
+    .text(function(d) { return d; });
 }
+
 D3Chart.prototype.updateAxis = function() {
   // update domain
   this.x.domain(this.dataset.map(function(d) {
@@ -105,12 +116,12 @@ D3Chart.prototype.updateBar = function() {
   var barGroup = this.root.selectAll(".barGroup").data(this.dataset);
 
   barGroup.enter().append("g")
-  .attr("class", "barGroup")
-  .attr("transform", function(d, i) { return "translate(" + that.x(d.date.substring(10, 14)) + ",0)";});
+    .attr("class", "barGroup")
+    .attr("transform", function(d, i) { return "translate(" + that.x(d.date.substring(10, 14)) + ",0)";});
 
   barGroup.transition().duration(this.duration)
-  .attr("class", "barGroup")
-  .attr("transform", function(d, i) { return "translate(" + that.x(d.date.substring(10, 14)) + ",0)";});
+    .attr("class", "barGroup")
+    .attr("transform", function(d, i) { return "translate(" + that.x(d.date.substring(10, 14)) + ",0)";});
 
   // each bar
   var rect = barGroup.selectAll("rect")
@@ -123,10 +134,10 @@ D3Chart.prototype.updateBar = function() {
     .style("fill", function(d) { return that.color(d.name);});
 
   rect.transition().duration(this.duration)
-  .attr("width", this.x.rangeBand())
-  .attr("y", function(d) { return that.y(d.y1); })
-  .attr("height", function(d) { return that.y(d.y0) - that.y(d.y1);})
-  .style("fill", function(d) { return that.color(d.name);});
+    .attr("width", this.x.rangeBand())
+    .attr("y", function(d) { return that.y(d.y1); })
+    .attr("height", function(d) { return that.y(d.y0) - that.y(d.y1);})
+    .style("fill", function(d) { return that.color(d.name);});
 }
 
 D3Chart.prototype.updateChart = function() {
