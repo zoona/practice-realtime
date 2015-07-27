@@ -1,5 +1,6 @@
 package practice.bigdata.realtimeprocessing.storm;
 
+import backtype.storm.generated.AuthorizationException;
 import practice.bigdata.realtimeprocessing.storm.Bolt.CounterBolt;
 import practice.bigdata.realtimeprocessing.storm.Bolt.SaveBolt;
 import practice.bigdata.realtimeprocessing.storm.spout.RedisSpout;
@@ -12,7 +13,7 @@ import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Fields;
 
 public class CoffeeTopology {
-  private static String redisHost = "localhost";
+  private static String redisHost = "Tom";
   private static int redisPort = 6379;
   private static String topologyID = "CoffeeTopology";
 
@@ -32,8 +33,8 @@ public class CoffeeTopology {
       topologyID = args[1];
     }
     // submit
-    SubmitToLocal(conf, builder);
-    // SubmitToCluster(conf, builder);
+    //SubmitToLocal(conf, builder);
+    SubmitToCluster(conf, builder);
   }
 
   public static void SubmitToLocal(Config conf, TopologyBuilder builder) {
@@ -47,6 +48,8 @@ public class CoffeeTopology {
     } catch (AlreadyAliveException e) {
       e.printStackTrace();
     } catch (InvalidTopologyException e) {
+      e.printStackTrace();
+    } catch (AuthorizationException e) {
       e.printStackTrace();
     }
   }

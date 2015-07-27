@@ -1041,8 +1041,8 @@ pom.xml
       <groupId>org.apache.maven.plugins</groupId>
       <artifactId>maven-compiler-plugin</artifactId>
       <configuration>
-        <source>1.6</source>
-        <target>1.6</target>
+        <source>1.7</source>
+        <target>1.7</target>
       </configuration>
     </plugin>
     <!-- include dependency -->
@@ -1225,7 +1225,7 @@ agent.sinks.redis.redisKey = CoffeeOrderQueue
 flume-ng 실행
 
 ```bash
-flume-ng agent --conf-file realtiprocessing/conf/toRedisQueue.conf --conf realtimeprocessing/conf --classpath realtimeprocessing/target/realtimeprocessing-0.0.1-SNAPSHOT-jar-with-dependencies.jar --name agent
+flume-ng agent --conf-file realtiprocessing/conf/toRedisQueue.conf --conf realtime-practice/conf --classpath realtime-practice/target/realtimeprocessing-0.0.1-SNAPSHOT-jar-with-dependencies.jar --name agent
 ```
 
 ### 4-4. 처리
@@ -1607,8 +1607,8 @@ public class CoffeeTopology {
 ### 5-1. Dependencies
 **Maven 설치**
 ```bash
-wget http://mirror.apache-kr.org/maven/maven-3/3.2.3/binaries/apache-maven-3.2.3-bin.tar.gz
-tar xvfz apache-maven-3.2.3-bin.tar.gz
+wget http://mirror.apache-kr.org/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz
+tar xvfz apache-maven-3.3.3-bin.tar.gz
 ```
 
 환경설정
@@ -1616,7 +1616,7 @@ tar xvfz apache-maven-3.2.3-bin.tar.gz
 vi ~/.bash_profile
 ```
 ```bash
-export M2_HOME=$HOME/apache-maven-3.2.3
+export M2_HOME=$HOME/apache-maven-3.3.3
 PATH=$PATH:$HOME:$M2_HOME/bin
 ```
 
@@ -1635,9 +1635,9 @@ sudo npm install bower
 **redis 설치**
 
 ```bash
-wget http://download.redis.io/releases/redis-2.8.17.tar.gz
-tar xvfz redis-2.8.17.tar.gz
-cd redis-2.8.17
+wget http://download.redis.io/releases/redis-3.0.3.tar.gz
+tar xvfz redis-3.0.3.tar.gz
+cd redis-3.0.3
 make
 ```
 
@@ -1648,7 +1648,7 @@ vi ~/.bash_profile
 ```
 
 ```bash
-PATH=$PATH:$HOME/redis-2.8.17/src
+PATH=$PATH:$HOME/redis-3.0.3/src
 ```
 
 ```bash
@@ -1658,7 +1658,7 @@ PATH=$PATH:$HOME/redis-2.8.17/src
 실행
 
 ```bash
-redis-server ~/redis-2.8.17/redis.conf
+redis-server ~/redis-3.0.3/redis.conf
 ```
 
 ```bash
@@ -1668,8 +1668,8 @@ redis-client
 **flume 설치**
 
 ```bash
-wget http://apache.tt.co.kr/flume/1.5.0.1/apache-flume-1.5.0.1-bin.tar.gz
-tar xvfz apache-flume-1.5.0.1-bin.tar.gz
+wget http://apache.tt.co.kr/flume/1.6.0/apache-flume-1.6.0-bin.tar.gz
+tar xvfz apache-flume-1.5.2-bin.tar.gz
 ```
 
 환경설정
@@ -1679,7 +1679,7 @@ vi ~/.bash_profile
 ```
 
 ```bash
-PATH=$PATH:$HOME/apache-flume-1.5.0.1-bin/bin
+PATH=$PATH:$HOME/apache-flume-1.6.0-bin/bin
 ```
 
 ```bash
@@ -1697,8 +1697,8 @@ pip install redis
 
 clone source
 ```bash
-git clone https://github.com/zoona/practice-realtimeprocessing.git
-cd practice-realtimeprocessing
+git clone https://github.com/zoona/realtime-practice.git
+cd realtime-practice
 ```
 
 data generator
@@ -1708,12 +1708,12 @@ python datagenerator/generate.py
 
 flume
 ```bash
-flume-ng agent --conf-file realtimeprocessing/conf/toRedisQueue.conf --conf realtimeprocessing/conf --classpath realtimeprocessing/target/realtimeprocessing-0.0.1-SNAPSHOT-jar-with-dependencies.jar --name agent
+flume-ng agent --conf-file realtime-practice/conf/toRedisQueue.conf --conf realtime-practice/conf --classpath realtime-practice/target/realtimeprocessing-0.0.1-SNAPSHOT-jar-with-dependencies.jar --name agent
 ```
 
 storm
 ```bash
-storm jar realtimeprocessing/target/realtimeprocessing-0.0.1-SNAPSHOT-jar-with-dependencies.jar practice.bigdata.realtimeprocessing.storm.CoffeeTopology
+storm jar realtime-practice/target/realtimeprocessing-0.0.1-SNAPSHOT-jar-with-dependencies.jar practice.bigdata.realtimeprocessing.storm.CoffeeTopology
 ```
 
 service

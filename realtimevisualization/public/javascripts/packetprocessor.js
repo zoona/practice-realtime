@@ -1,6 +1,7 @@
 $(function() {
 // connect to server
-var host = window.location.host.split(':')[0];
+
+var host = window.location.host
 var socket = io.connect('http://' + host);
 
 socket.on('connect', function() {
