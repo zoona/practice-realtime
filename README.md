@@ -110,6 +110,7 @@ print "generate Complete"
 ```
 
 CoffeeOrders.txt
+
 ![json](http://zoona.com/wordpress/wp-content/uploads/2014/09/Screen-Shot-2014-09-29-at-12.57.38-PM.png)
 
 ### 2-3. 수집
