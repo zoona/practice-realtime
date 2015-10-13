@@ -1226,7 +1226,7 @@ agent.sinks.redis.redisKey = CoffeeOrderQueue
 flume-ng 실행
 
 ```bash
-flume-ng agent --conf-file realtiprocessing/conf/toRedisQueue.conf --conf realtime-practice/conf --classpath realtime-practice/target/realtimeprocessing-0.0.1-SNAPSHOT-jar-with-dependencies.jar --name agent
+flume-ng agent --conf-file realtimeprocessing/conf/toRedisQueue.properties --conf realtimeprocessing/conf --classpath realtimeprocessing/target/realtimeprocessing-0.0.1-SNAPSHOT-jar-with-dependencies.jar --name agent
 ```
 
 ### 4-4. 처리
@@ -1709,12 +1709,12 @@ python datagenerator/generate.py
 
 flume
 ```bash
-flume-ng agent --conf-file realtime-practice/conf/toRedisQueue.conf --conf realtime-practice/conf --classpath realtime-practice/target/realtimeprocessing-0.0.1-SNAPSHOT-jar-with-dependencies.jar --name agent
+flume-ng agent --conf-file realtimeprocessing/conf/toRedisQueue.properties --conf realtimeprocessing/conf --classpath realtimeprocessing/target/realtimeprocessing-0.0.1-SNAPSHOT-jar-with-dependencies.jar --name agent
 ```
 
 storm
 ```bash
-storm jar realtime-practice/target/realtimeprocessing-0.0.1-SNAPSHOT-jar-with-dependencies.jar practice.bigdata.realtimeprocessing.storm.CoffeeTopology
+storm jar realtimeprocessing/target/realtimeprocessing-0.0.1-SNAPSHOT-jar-with-dependencies.jar practice.bigdata.realtimeprocessing.storm.CoffeeTopology
 ```
 
 service

@@ -18,7 +18,7 @@ import storm.kafka.*;
 import java.util.UUID;
 
 public class CoffeeTopology {
-  private static String redisHost = "Tom";
+  private static String redisHost = "localhost";
   private static int redisPort = 6379;
   private static String topologyID = "CoffeeTopology";
 
@@ -26,8 +26,8 @@ public class CoffeeTopology {
     // build topology
     TopologyBuilder builder = new TopologyBuilder();
 
-    String zkConnString = "Tom:2181";
-    String topicName = "realtime-practice";
+    String zkConnString = "localhost:2181";
+    String topicName = "realtime";
     BrokerHosts hosts = new ZkHosts(zkConnString);
     SpoutConfig spoutConfig = new SpoutConfig(hosts, topicName, "/" + topicName, UUID.randomUUID().toString());
     spoutConfig.scheme = new SchemeAsMultiScheme(new StringScheme());
@@ -46,8 +46,8 @@ public class CoffeeTopology {
       topologyID = args[1];
     }
     // submit
-    //SubmitToLocal(conf, builder);
-    SubmitToCluster(conf, builder);
+    SubmitToLocal(conf, builder);
+    //SubmitToCluster(conf, builder);
   }
 
   public static void SubmitToLocal(Config conf, TopologyBuilder builder) {
